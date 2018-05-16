@@ -1,4 +1,115 @@
 $(document).ready(function() {
+ $("#xbtnSubmit").click(function(){
+email = $("#email").val();		
+var fdata = {
+  "_source" : false,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "nested": {
+            "path": "admins",
+            "query": {
+              "bool": {
+                "must": [
+                  {
+                    "match": {
+                      "admins.EMAIL": email
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+var items = []; 
+$.ajax({
+  method: "POST",
+  url: "https://hub.springer-sbm.com/mps_es_bps_contracts_ip/_search?size=5000",
+  data: JSON.stringify(fdata),
+  dataType : 'json',
+  contentType: 'application/json',
+})
+.done(function( data ) {
+  
+ 
+  $.each(data.hits.hits, function (index, value) {
+
+     items.push(
+    {Institution: value._id }
+    );
+	 
+});
+$(function () {
+    $('#table').bootstrapTable({
+        data: items
+    });  });
+})
+.fail(function( data ) {
+  console.log(data);
+});
+    });
+	 $("#abtnSubmit").click(function(){
+email = $("#email").val();		
+var fdata = {
+  "_source" : false,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "nested": {
+            "path": "admins",
+            "query": {
+              "bool": {
+                "must": [
+                  {
+                    "match": {
+                      "admins.EMAIL": email
+                    }
+                  }
+                ]
+              }
+            },
+			"inner_hits" : {}
+          }
+        }
+      ]
+    }
+  }
+}
+var items = []; 
+$.ajax({
+  method: "POST",
+  url: "https://hub.springer-sbm.com/mps_es_bps_contracts_ip/_search?size=5000",
+  data: JSON.stringify(fdata),
+  dataType : 'json',
+  contentType: 'application/json',
+})
+.done(function( data ) {
+  
+ 
+  $.each(data.hits.hits, function (index, value) {
+	 var top_obj = value;
+	 $.each(value.inner_hits.admins.hits.hits, function (index, value){
+     items.push(
+    {Admin: value._source.BP, Admin_First_Name: value._source.FIRSTNAME, Admin_Last_Name: value._source.LASTNAME , Institution: top_obj._id }
+    );
+	 });
+});
+$(function () {
+    $('#table').bootstrapTable({
+        data: items
+    });  });
+})
+.fail(function( data ) {
+  console.log(data);
+});
+    });
+	
     $("#fbtnSubmit").click(function(){
 email = $("#email").val();		
 var fdata = {
